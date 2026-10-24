@@ -1,6 +1,6 @@
 // Tiene una copia dell'app sul telefono: si apre anche senza rete.
 // Quando pubblichi una nuova versione cambia VERSIONE, così il telefono scarica i file nuovi.
-const VERSIONE = 'soldi-v2';
+const VERSIONE = 'soldi-v3';
 const FILE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
