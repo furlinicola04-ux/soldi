@@ -422,7 +422,7 @@ function conti(){
     <div class="head"><h2>Backup</h2><span class="badge" id="badge">${sync}</span></div>
     <span class="muted">I dati sono salvati solo su questo telefono. Scarica un backup ogni tanto e tienilo su Drive o iCloud: se cambi telefono o cancelli i dati del browser, lo usi per ripristinare tutto.</span>
     <div class="duo"><button class="cta blue" id="exp" style="min-height:48px;font-size:14px">Scarica backup</button><button class="ghost" id="csv">Scarica CSV</button></div>
-    <label class="link" style="text-align:center;display:flex;align-items:center;justify-content:center">Ripristina da un backup<input type="file" id="imp" accept=".json" hidden></label>
+    <label class="link" style="text-align:center;display:flex;align-items:center;justify-content:center">Ripristina da un backup<input type="file" id="imp" accept="application/json,text/plain,.json,.txt" hidden></label>
   </section>`;
 }
 
@@ -503,7 +503,14 @@ document.addEventListener('change',e=>{const t=e.target;
   if(t.dataset.calv!==undefined){S.cal[+t.dataset.calv].voce=t.value;save()}
   if(t.dataset.cali!==undefined){S.cal[+t.dataset.cali].imp=+t.value||0;save()}
   if(t.dataset.saldo){const c=S.conti.find(c=>c.id==t.dataset.saldo);c.saldoIniziale=+t.value||0;save()}
-  if(t.id==='imp'&&t.files[0]){t.files[0].text().then(x=>{try{const d=JSON.parse(x);if(d.conti&&d.mov){S=d;normalizza();save();toast('Backup ripristinato')}else toast('Il file non è un backup di questa app')}catch(err){toast('Il file non è un backup di questa app')}})}
+  if(t.id==='imp'&&t.files[0]){const f=t.files[0];t.value=''; // così si può riscegliere lo stesso file
+    f.text().then(x=>{
+      // il telefono a volte salva il file come .txt o aggiunge caratteri invisibili all'inizio: si legge dal primo "{"
+      const i=x.indexOf('{');let d=null;try{d=JSON.parse(i>=0?x.slice(i):x)}catch(err){}
+      if(!d){toast('Non riesco a leggere il file: scegli il backup .json scaricato dall\'app');return}
+      if(!Array.isArray(d.conti)||!Array.isArray(d.mov)){toast('Questo file non è un backup di I miei soldi');return}
+      S={ric:[],...d};normalizza();applicaRicorrenti();save();toast(`Backup ripristinato: ${S.mov.length} movimenti`)
+    },()=>toast('Il telefono non ha dato accesso al file. Riprova scegliendolo da File'))}
 });
 document.addEventListener('input',e=>{if(e.target.id!=='c-reale')return;
   const el=document.getElementById('conta-diff'), prev=saldoConto(contoCash()), r=parseFloat(e.target.value);
